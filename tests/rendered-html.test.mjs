@@ -23,17 +23,19 @@ async function render() {
   );
 }
 
-test("server-renders the Google Cloud Next crossword", async () => {
+test("server-renders the personalized crossword builder", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Neural Mini — Google Cloud Next ’26 Crossword<\/title>/i);
-  assert.match(html, /aria-label="9 by 9 crossword grid"/);
-  assert.match(html, /NEXT ’26 EDITION · 002/);
-  assert.match(html, /Knowledge ___, the new grounding layer for enterprise agents/);
-  assert.match(html, /Agent ___, re-engineered for long-running AI agents/);
+  assert.match(html, /<title>Neural Mini — Personalized AI Crossword<\/title>/i);
+  assert.match(html, /What’s been on your tech radar\?/);
+  assert.match(html, /Agents/);
+  assert.match(html, /TPUs &amp; infrastructure/);
+  assert.match(html, /Generative AI/);
+  assert.match(html, /Data &amp; security/);
+  assert.match(html, /Generate my crossword/);
   assert.doesNotMatch(html, /codex-preview|Building your site|react-loading-skeleton/i);
 });
 
@@ -44,13 +46,15 @@ test("keeps the finished puzzle responsive and interactive", async () => {
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /"CATALOG"/);
-  assert.match(page, /"RUNTIME"/);
-  assert.match(page, /const gridSize = solution\.length/);
+  assert.match(page, /"REGISTRY"/);
+  assert.match(page, /"IRONWOOD"/);
+  assert.match(page, /"GEMINI"/);
+  assert.match(page, /"LAKEHOUSE"/);
+  assert.match(page, /const compilePuzzle/);
   assert.match(page, /onClick=\{checkPuzzle\}/);
   assert.match(page, /onClick=\{revealLetter\}/);
   assert.match(page, /onClick=\{backspace\}/);
-  assert.match(layout, /Google Cloud Next ’26 Crossword/);
+  assert.match(layout, /Personalized AI Crossword/);
   assert.match(css, /grid-template-columns:\s*repeat\(9,\s*1fr\)/);
   assert.match(css, /@media \(max-width:\s*650px\)/);
 });

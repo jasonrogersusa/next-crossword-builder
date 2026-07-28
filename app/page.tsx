@@ -3,7 +3,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Direction = "across" | "down";
+type Interest = "agents" | "infra" | "genai" | "data";
+type Difficulty = "casual" | "curious" | "expert";
+type Phase = "setup" | "generating" | "playing";
 type Cell = { row: number; col: number };
+type ClueText = { casual?: string; standard: string; expert?: string };
+type Entry = {
+  answer: string;
+  row: number;
+  col: number;
+  direction: Direction;
+  clue: ClueText;
+};
+type Puzzle = {
+  label: string;
+  shortLabel: string;
+  description: string;
+  entries: Entry[];
+};
 type Clue = {
   number: number;
   direction: Direction;
@@ -11,161 +28,228 @@ type Clue = {
   clue: string;
   cells: Cell[];
 };
-
-const solution = [
-  "###AWARE#",
-  "#CATALOG#",
-  "ORDERING#",
-  "MAD######",
-  "GPS###SHE",
-  "######WAY",
-  "#ADDITIVE",
-  "#RUNTIME#",
-  "#TEASE###",
-].map((row) => [...row]);
-
-const gridSize = solution.length;
-const firstCell: Cell = { row: 0, col: 3 };
-
-const initialGrid = solution.map((row) =>
-  row.map((cell) => (cell === "#" ? "#" : "")),
-);
-
-const span = (
-  direction: Direction,
-  number: number,
-  answer: string,
-  clue: string,
-  row: number,
-  col: number,
-): Clue => ({
-  direction,
-  number,
-  answer,
-  clue,
-  cells: [...answer].map((_, index) => ({
-    row: row + (direction === "down" ? index : 0),
-    col: col + (direction === "across" ? index : 0),
-  })),
-});
-
-const clues: Clue[] = [
-  span("across", 1, "AWARE", "In the know", 0, 3),
-  span(
-    "across",
-    6,
-    "CATALOG",
-    "Knowledge ___, the new grounding layer for enterprise agents",
-    1,
-    1,
-  ),
-  span("across", 8, "ORDERING", "Putting items into sequence", 2, 0),
-  span("across", 9, "MAD", "More than annoyed", 3, 0),
-  span("across", 10, "GPS", "Route-planning tech, for short", 4, 0),
-  span("across", 11, "SHE", "Pronoun for a woman", 4, 6),
-  span("across", 14, "WAY", "Route or manner", 5, 6),
-  span("across", 15, "ADDITIVE", "Something mixed in to enhance a material", 6, 1),
-  span(
-    "across",
-    20,
-    "RUNTIME",
-    "Agent ___, re-engineered for long-running AI agents",
-    7,
-    1,
-  ),
-  span("across", 21, "TEASE", "Playfully provoke", 8, 1),
-  span("down", 1, "ATE", "Finished dinner", 0, 3),
-  span("down", 2, "WAR", "Armed conflict", 0, 4),
-  span("down", 3, "ALI", "Boxer Muhammad", 0, 5),
-  span("down", 4, "RON", "Weasley of Hogwarts", 0, 6),
-  span("down", 5, "EGG", "Breakfast shellful", 0, 7),
-  span("down", 6, "CRAP", "Nonsense, bluntly", 1, 1),
-  span("down", 7, "ADDS", "Puts in", 1, 2),
-  span("down", 8, "OMG", "Shocked-text initials", 2, 0),
-  span("down", 11, "SWIM", "Move through water", 4, 6),
-  span("down", 12, "HAVE", "Possess", 4, 7),
-  span("down", 13, "EYE", "Camera-like organ", 4, 8),
-  span("down", 15, "ART", "Gallery display", 6, 1),
-  span("down", 16, "DUE", "Expected to arrive", 6, 2),
-  span("down", 17, "DNA", "Genetic code", 6, 3),
-  span("down", 18, "ITS", "Possessive pronoun", 6, 4),
-  span("down", 19, "TIE", "Finish even", 6, 5),
-];
-
-const cellNumbers: Record<string, number> = {
-  "0-3": 1,
-  "0-4": 2,
-  "0-5": 3,
-  "0-6": 4,
-  "0-7": 5,
-  "1-1": 6,
-  "1-2": 7,
-  "2-0": 8,
-  "3-0": 9,
-  "4-0": 10,
-  "4-6": 11,
-  "4-7": 12,
-  "4-8": 13,
-  "5-6": 14,
-  "6-1": 15,
-  "6-2": 16,
-  "6-3": 17,
-  "6-4": 18,
-  "6-5": 19,
-  "7-1": 20,
-  "8-1": 21,
+type CompiledPuzzle = {
+  solution: string[][];
+  clues: Clue[];
+  cellNumbers: Record<string, number>;
+  firstCell: Cell;
 };
 
-const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-const storageKey = "neural-mini-next26-progress";
+const GRID_SIZE = 9;
 
+const entry = (
+  answer: string,
+  row: number,
+  col: number,
+  direction: Direction,
+  standard: string,
+  casual?: string,
+  expert?: string,
+): Entry => ({
+  answer,
+  row,
+  col,
+  direction,
+  clue: { standard, casual, expert },
+});
+
+const puzzles: Record<Interest, Puzzle> = {
+  agents: {
+    label: "Agents & orchestration",
+    shortLabel: "agents",
+    description: "Memory, tools, runtimes, and the systems that connect them.",
+    entries: [
+      entry("REGISTRY", 4, 0, "across", "Agent Platform directory of deployed agents", "Where deployed agents are listed", "The “DNS” of an internet of agents"),
+      entry("INBOX", 4, 3, "down", "Gemini Enterprise hub for managing agent activity", "Where an agent’s work lands"),
+      entry("GATEWAY", 2, 5, "down", "Policy layer for agent-to-agent and agent-to-tool traffic", "Guarded entrance for agent connections"),
+      entry("ADK", 7, 5, "across", "Agent Development Kit, briefly", "Google’s agent-building kit, briefly"),
+      entry("MEMORY", 0, 0, "down", "What Memory Bank preserves for an agent over time", "What helps an agent remember"),
+      entry("AGENT", 2, 4, "across", "AI system that plans and acts toward a goal", "AI that can plan and take action"),
+      entry("MCP", 2, 0, "across", "Protocol that connects models to tools, briefly", "Model Context Protocol, briefly"),
+    ],
+  },
+  infra: {
+    label: "TPUs & infrastructure",
+    shortLabel: "infrastructure",
+    description: "AI chips, networking, training, and inference at cloud scale.",
+    entries: [
+      entry("IRONWOOD", 4, 0, "across", "Google’s seventh-generation TPU, now generally available", "Seventh-generation Google TPU", "TPU generation preceding 8t and 8i"),
+      entry("INFER", 3, 3, "down", "What the new TPU 8i is optimized to do", "What an AI model does after training"),
+      entry("AXION", 1, 5, "down", "Google Cloud custom CPU family", "Google’s custom cloud CPU"),
+      entry("CLOUD", 0, 7, "down", "Home of Google’s AI Hypercomputer", "Where remote AI compute lives"),
+      entry("VIRGO", 7, 1, "across", "New high-performance networking layer announced at Next ’26", "Next ’26 networking innovation"),
+      entry("TRAIN", 1, 0, "down", "What the TPU 8t is designed to accelerate", "Teach a model from examples"),
+      entry("TPU", 1, 0, "across", "Google AI accelerator, briefly", "Tensor Processing Unit, briefly"),
+    ],
+  },
+  genai: {
+    label: "Generative AI",
+    shortLabel: "generative AI",
+    description: "Models that create text, imagery, video, music, and more.",
+    entries: [
+      entry("GEMINI", 4, 1, "across", "Google’s flagship multimodal AI model family", "Google’s AI model family"),
+      entry("PROMPT", 1, 3, "down", "Instructions supplied to a generative model", "What you ask an AI"),
+      entry("GEMMA", 4, 1, "down", "Google family of lightweight open models", "Google’s lightweight open model family"),
+      entry("VIDEO", 3, 6, "down", "Medium generated by Veo", "What Veo creates"),
+      entry("LYRIA", 2, 1, "across", "Google model family for music generation", "Google’s music-generation model"),
+      entry("AUDIO", 8, 1, "across", "Sound-based model output", "What reaches your ears"),
+      entry("VEO", 6, 5, "across", "Google’s generative video model", "Three-letter video model"),
+    ],
+  },
+  data: {
+    label: "Data & security",
+    shortLabel: "data and security",
+    description: "Trusted context, governance, defenses, and enterprise data.",
+    entries: [
+      entry("LAKEHOUSE", 4, 0, "across", "Cross-cloud, AI-native home for analytical data", "Data architecture mixing lake and warehouse"),
+      entry("CATALOG", 1, 1, "down", "Knowledge ___ grounds agents in trusted business context", "Knowledge ___ organizes trusted context"),
+      entry("DATA", 2, 0, "across", "Raw material for analytics and AI", "Facts fed into a model"),
+      entry("POLICY", 3, 5, "down", "Rule enforced by Agent Gateway", "A rule for safe system behavior"),
+      entry("THREAT", 1, 8, "down", "Risk that security teams detect and remediate", "Potential security danger"),
+      entry("TRUST", 1, 4, "across", "Foundation of secure enterprise AI", "Confidence in a system"),
+      entry("WIZ", 6, 4, "across", "Cloud security company now paired with Google Cloud", "Google Cloud security partner"),
+    ],
+  },
+};
+
+const interestOptions: Array<{
+  value: Interest;
+  label: string;
+  detail: string;
+  mark: string;
+}> = [
+  { value: "agents", label: "Agents", detail: "Orchestration, memory, tools", mark: "A" },
+  { value: "infra", label: "TPUs & infrastructure", detail: "Chips, networks, inference", mark: "T" },
+  { value: "genai", label: "Generative AI", detail: "Models, audio, video", mark: "G" },
+  { value: "data", label: "Data & security", detail: "Catalogs, defense, trust", mark: "D" },
+];
+
+const difficultyOptions: Array<{
+  value: Difficulty;
+  label: string;
+  detail: string;
+}> = [
+  { value: "casual", label: "Quick & friendly", detail: "Clear clues with answer lengths" },
+  { value: "curious", label: "Product curious", detail: "A balanced Next ’26 challenge" },
+  { value: "expert", label: "Deep cut", detail: "More insider-style clueing" },
+];
+
+const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 const keyFor = ({ row, col }: Cell) => `${row}-${col}`;
 
+const compilePuzzle = (
+  puzzle: Puzzle,
+  difficulty: Difficulty,
+): CompiledPuzzle => {
+  const solution = Array.from({ length: GRID_SIZE }, () =>
+    Array.from({ length: GRID_SIZE }, () => "#"),
+  );
+
+  puzzle.entries.forEach((item) => {
+    [...item.answer].forEach((letter, index) => {
+      const row = item.row + (item.direction === "down" ? index : 0);
+      const col = item.col + (item.direction === "across" ? index : 0);
+      solution[row][col] = letter;
+    });
+  });
+
+  const starts = new Map<string, number>();
+  const orderedStarts = [...new Set(puzzle.entries.map((item) => `${item.row}-${item.col}`))]
+    .map((key) => {
+      const [row, col] = key.split("-").map(Number);
+      return { key, row, col };
+    })
+    .sort((a, b) => a.row - b.row || a.col - b.col);
+
+  orderedStarts.forEach((start, index) => starts.set(start.key, index + 1));
+
+  const clues = puzzle.entries
+    .map((item): Clue => {
+      const base =
+        difficulty === "casual"
+          ? item.clue.casual ?? item.clue.standard
+          : difficulty === "expert"
+            ? item.clue.expert ?? item.clue.standard
+            : item.clue.standard;
+      return {
+        number: starts.get(`${item.row}-${item.col}`) ?? 1,
+        direction: item.direction,
+        answer: item.answer,
+        clue: difficulty === "casual" ? `${base} (${item.answer.length})` : base,
+        cells: [...item.answer].map((_, index) => ({
+          row: item.row + (item.direction === "down" ? index : 0),
+          col: item.col + (item.direction === "across" ? index : 0),
+        })),
+      };
+    })
+    .sort(
+      (a, b) =>
+        (a.direction === b.direction
+          ? 0
+          : a.direction === "across"
+            ? -1
+            : 1) || a.number - b.number,
+    );
+
+  return {
+    solution,
+    clues,
+    cellNumbers: Object.fromEntries(starts),
+    firstCell: clues[0].cells[0],
+  };
+};
+
+const emptyGridFor = (solution: string[][]) =>
+  solution.map((row) => row.map((cell) => (cell === "#" ? "#" : "")));
+
 export default function Home() {
-  const [grid, setGrid] = useState(initialGrid);
+  const [phase, setPhase] = useState<Phase>("setup");
+  const [interest, setInterest] = useState<Interest | null>(null);
+  const [chosenDifficulty, setChosenDifficulty] =
+    useState<Difficulty | null>(null);
+  const [activeInterest, setActiveInterest] = useState<Interest>("agents");
+  const [difficulty, setDifficulty] = useState<Difficulty>("curious");
+
+  const puzzle = puzzles[activeInterest];
+  const compiled = useMemo(
+    () => compilePuzzle(puzzle, difficulty),
+    [difficulty, puzzle],
+  );
+  const { solution, clues, cellNumbers, firstCell } = compiled;
+
+  const [grid, setGrid] = useState(() => emptyGridFor(solution));
   const [selected, setSelected] = useState<Cell>(firstCell);
   const [direction, setDirection] = useState<Direction>("across");
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [revealedCells, setRevealedCells] = useState<Set<string>>(new Set());
   const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(true);
+  const [running, setRunning] = useState(false);
   const [toast, setToast] = useState("");
   const [complete, setComplete] = useState(false);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved) as string[][];
-        if (
-          parsed.length === gridSize &&
-          parsed.every((row) => row.length === gridSize)
-        ) {
-          setGrid(parsed);
-        }
-      }
-    } catch {
-      // A fresh puzzle is a perfectly good fallback.
-    }
-  }, []);
+  const storageKey = `neural-mini-${activeInterest}-${difficulty}`;
 
   useEffect(() => {
-    if (!running) return;
-    const timer = window.setInterval(() => setElapsed((value) => value + 1), 1000);
+    if (!running || phase !== "playing") return;
+    const timer = window.setInterval(
+      () => setElapsed((value) => value + 1),
+      1000,
+    );
     return () => window.clearInterval(timer);
-  }, [running]);
+  }, [phase, running]);
 
   useEffect(() => {
+    if (phase !== "playing") return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(grid));
     } catch {
       // Progress saving is an optional enhancement.
     }
-  }, [grid]);
+  }, [grid, phase, storageKey]);
 
   const clueList = useMemo(
     () => clues.filter((clue) => clue.direction === direction),
-    [direction],
+    [clues, direction],
   );
 
   const currentClue = useMemo(() => {
@@ -185,7 +269,7 @@ export default function Home() {
       ) ??
       clues[0]
     );
-  }, [direction, selected]);
+  }, [clues, direction, selected]);
 
   const activeKeys = useMemo(
     () => new Set(currentClue.cells.map((cell) => keyFor(cell))),
@@ -198,6 +282,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (phase !== "playing") return;
     const solved = solution.every((row, rowIndex) =>
       row.every(
         (answer, colIndex) =>
@@ -208,7 +293,39 @@ export default function Home() {
       setRunning(false);
       window.setTimeout(() => setComplete(true), 180);
     }
-  }, [complete, grid]);
+  }, [complete, grid, phase, solution]);
+
+  const generatePuzzle = () => {
+    if (!interest || !chosenDifficulty) return;
+    const nextInterest = interest;
+    const nextDifficulty = chosenDifficulty;
+    const nextPuzzle = compilePuzzle(
+      puzzles[nextInterest],
+      nextDifficulty,
+    );
+    setPhase("generating");
+    window.setTimeout(() => {
+      setActiveInterest(nextInterest);
+      setDifficulty(nextDifficulty);
+      setGrid(emptyGridFor(nextPuzzle.solution));
+      setSelected(nextPuzzle.firstCell);
+      setDirection("across");
+      setWrongCells(new Set());
+      setRevealedCells(new Set());
+      setElapsed(0);
+      setComplete(false);
+      setRunning(true);
+      setPhase("playing");
+    }, 620);
+  };
+
+  const startAnother = () => {
+    setRunning(false);
+    setComplete(false);
+    setInterest(null);
+    setChosenDifficulty(null);
+    setPhase("setup");
+  };
 
   const moveWithinClue = useCallback(
     (offset: number, clear = false) => {
@@ -234,6 +351,7 @@ export default function Home() {
 
   const enterLetter = useCallback(
     (letter: string) => {
+      if (phase !== "playing") return;
       const normalized = letter.toUpperCase();
       if (!/^[A-Z]$/.test(normalized)) return;
       setWrongCells((previous) => {
@@ -248,7 +366,7 @@ export default function Home() {
       });
       moveWithinClue(1);
     },
-    [moveWithinClue, selected],
+    [moveWithinClue, phase, selected],
   );
 
   const backspace = useCallback(() => {
@@ -274,9 +392,9 @@ export default function Home() {
       let col = selected.col + colDelta;
       while (
         row >= 0 &&
-        row < gridSize &&
+        row < GRID_SIZE &&
         col >= 0 &&
-        col < gridSize
+        col < GRID_SIZE
       ) {
         if (solution[row][col] !== "#") {
           setSelected({ row, col });
@@ -287,12 +405,12 @@ export default function Home() {
         col += colDelta;
       }
     },
-    [selected],
+    [selected, solution],
   );
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (complete) return;
+      if (complete || phase !== "playing") return;
       if (/^[a-zA-Z]$/.test(event.key)) {
         event.preventDefault();
         enterLetter(event.key);
@@ -318,7 +436,7 @@ export default function Home() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [backspace, complete, enterLetter, moveSpatially]);
+  }, [backspace, complete, enterLetter, moveSpatially, phase]);
 
   const selectCell = (row: number, col: number) => {
     if (solution[row][col] === "#") return;
@@ -346,9 +464,15 @@ export default function Home() {
 
   const changeClue = (offset: number) => {
     const index = clueList.findIndex(
-      (clue) => clue.number === currentClue.number,
+      (clue) =>
+        clue.number === currentClue.number &&
+        clue.direction === currentClue.direction,
     );
-    const next = clueList[(index + offset + clueList.length) % clueList.length];
+    const startIndex = index < 0 ? 0 : index;
+    const next =
+      clueList[
+        (startIndex + offset + clueList.length) % clueList.length
+      ];
     setSelected(next.cells[0]);
   };
 
@@ -369,7 +493,10 @@ export default function Home() {
     );
     setWrongCells(wrong);
     if (!entered) showToast("Add a few letters first");
-    else if (wrong.size) showToast(`${wrong.size} letter${wrong.size > 1 ? "s" : ""} to rethink`);
+    else if (wrong.size)
+      showToast(
+        `${wrong.size} letter${wrong.size > 1 ? "s" : ""} to rethink`,
+      );
     else showToast("Looking sharp so far");
   };
 
@@ -377,7 +504,8 @@ export default function Home() {
     const key = keyFor(selected);
     setGrid((previous) => {
       const updated = previous.map((row) => [...row]);
-      updated[selected.row][selected.col] = solution[selected.row][selected.col];
+      updated[selected.row][selected.col] =
+        solution[selected.row][selected.col];
       return updated;
     });
     setWrongCells((previous) => {
@@ -390,8 +518,9 @@ export default function Home() {
   };
 
   const resetPuzzle = () => {
-    if (!window.confirm("Clear the whole puzzle and restart the timer?")) return;
-    setGrid(initialGrid);
+    if (!window.confirm("Clear the whole puzzle and restart the timer?"))
+      return;
+    setGrid(emptyGridFor(solution));
     setWrongCells(new Set());
     setRevealedCells(new Set());
     setSelected(firstCell);
@@ -402,7 +531,117 @@ export default function Home() {
     localStorage.removeItem(storageKey);
   };
 
-  const formattedTime = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
+  const formattedTime = `${Math.floor(elapsed / 60)}:${String(
+    elapsed % 60,
+  ).padStart(2, "0")}`;
+
+  if (phase !== "playing") {
+    return (
+      <main className="app-shell">
+        <div className="ambient ambient-one" />
+        <div className="ambient ambient-two" />
+        <section className="game-card setup-card" aria-label="Build your AI crossword">
+          <header className="topbar">
+            <div className="brand">
+              <span className="brand-mark" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+              <span>
+                <strong>NEURAL</strong>
+                <em>MINI</em>
+              </span>
+            </div>
+            <div className="puzzle-meta">
+              <span>MADE FOR YOU</span>
+              <b>AI CROSSWORD</b>
+            </div>
+          </header>
+
+          {phase === "generating" ? (
+            <div className="generating-panel" role="status" aria-live="polite">
+              <div className="build-grid" aria-hidden="true">
+                {Array.from({ length: 9 }, (_, index) => <i key={index} />)}
+              </div>
+              <p>Crossing your interests…</p>
+              <span>Building a fresh {interest ? puzzles[interest].shortLabel : "AI"} grid</span>
+            </div>
+          ) : (
+            <div className="setup-body">
+              <div className="setup-intro">
+                <p className="eyebrow">YOUR PERSONAL AI MINI</p>
+                <h1>What’s been on your tech radar?</h1>
+                <p>
+                  Two quick choices, then we’ll build a crossword around what
+                  you want to explore.
+                </p>
+              </div>
+
+              <fieldset className="question-block">
+                <legend>
+                  <span>1</span>
+                  Pick an area
+                </legend>
+                <div className="interest-grid">
+                  {interestOptions.map((option) => (
+                    <button
+                      type="button"
+                      key={option.value}
+                      className={interest === option.value ? "chosen" : ""}
+                      aria-pressed={interest === option.value}
+                      onClick={() => setInterest(option.value)}
+                    >
+                      <b aria-hidden="true">{option.mark}</b>
+                      <span>
+                        <strong>{option.label}</strong>
+                        <small>{option.detail}</small>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="question-block">
+                <legend>
+                  <span>2</span>
+                  Choose your clue depth
+                </legend>
+                <div className="difficulty-row">
+                  {difficultyOptions.map((option) => (
+                    <button
+                      type="button"
+                      key={option.value}
+                      className={
+                        chosenDifficulty === option.value ? "chosen" : ""
+                      }
+                      aria-pressed={chosenDifficulty === option.value}
+                      onClick={() => setChosenDifficulty(option.value)}
+                    >
+                      <strong>{option.label}</strong>
+                      <small>{option.detail}</small>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <button
+                type="button"
+                className="generate-button"
+                disabled={!interest || !chosenDifficulty}
+                onClick={generatePuzzle}
+              >
+                Generate my crossword
+                <span aria-hidden="true">→</span>
+              </button>
+              <p className="setup-note">No account needed. Your choices stay on this device.</p>
+            </div>
+          )}
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="app-shell">
@@ -424,17 +663,23 @@ export default function Home() {
             </span>
           </div>
           <div className="puzzle-meta">
-            <span>NEXT ’26 EDITION · 002</span>
-            <time aria-label={`Elapsed time ${formattedTime}`}>{formattedTime}</time>
+            <span>{puzzle.label.toUpperCase()}</span>
+            <time aria-label={`Elapsed time ${formattedTime}`}>
+              {formattedTime}
+            </time>
           </div>
         </header>
 
         <div className="toolbar" aria-label="Puzzle tools">
           <p>
-            <span>Tuesday</span>
-            Product reveals, crossed.
+            <span>{difficultyOptions.find((item) => item.value === difficulty)?.label}</span>
+            {puzzle.description}
           </p>
           <div>
+            <button type="button" onClick={startAnother} aria-label="Build another puzzle">
+              <b>＋</b>
+              New
+            </button>
             <button type="button" onClick={checkPuzzle} aria-label="Check puzzle">
               <b>✓</b>
               Check
@@ -454,7 +699,7 @@ export default function Home() {
           <div
             className="crossword-grid grid-9"
             role="grid"
-            aria-label="9 by 9 crossword grid"
+            aria-label="9 by 9 personalized crossword grid"
           >
             {solution.map((row, rowIndex) =>
               row.map((answer, colIndex) => {
@@ -497,7 +742,11 @@ export default function Home() {
           </div>
 
           <aside className="side-panel">
-            <div className="direction-tabs" role="tablist" aria-label="Clue direction">
+            <div
+              className="direction-tabs"
+              role="tablist"
+              aria-label="Clue direction"
+            >
               {(["across", "down"] as Direction[]).map((tab) => (
                 <button
                   type="button"
@@ -517,7 +766,9 @@ export default function Home() {
                         ),
                     );
                     if (!matching) {
-                      const first = clues.find((clue) => clue.direction === tab);
+                      const first = clues.find(
+                        (clue) => clue.direction === tab,
+                      );
                       if (first) setSelected(first.cells[0]);
                     }
                   }}
@@ -533,7 +784,10 @@ export default function Home() {
                   type="button"
                   key={`${clue.direction}-${clue.number}`}
                   className={
-                    clue.number === currentClue.number ? "current" : ""
+                    clue.number === currentClue.number &&
+                    clue.direction === currentClue.direction
+                      ? "current"
+                      : ""
                   }
                   onClick={() => setSelected(clue.cells[0])}
                 >
@@ -597,13 +851,17 @@ export default function Home() {
         </div>
 
         <footer>
-          <span>NEURAL MINI</span>
-          <p>Made for curious humans.</p>
+          <span>MADE FOR YOU</span>
+          <p>{puzzle.label}</p>
           <span>9 × 9</span>
         </footer>
       </section>
 
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
 
       {complete && (
         <div className="modal-backdrop" role="presentation">
@@ -616,10 +874,10 @@ export default function Home() {
             <div className="success-orbit" aria-hidden="true">
               <span>✦</span>
             </div>
-            <p className="eyebrow">NEXT ’26 KNOWLEDGE: IMPRESSIVE</p>
+            <p className="eyebrow">PERSONALIZATION: ON POINT</p>
             <h1 id="completion-title">You cracked it.</h1>
             <p>
-              Human intuition: <strong>still undefeated.</strong>
+              The {puzzle.shortLabel} grid is <strong>complete.</strong>
             </p>
             <div className="stat-row">
               <div>
@@ -634,8 +892,12 @@ export default function Home() {
             <button type="button" onClick={() => setComplete(false)}>
               Admire the grid
             </button>
-            <button type="button" className="text-button" onClick={resetPuzzle}>
-              Play again
+            <button
+              type="button"
+              className="text-button"
+              onClick={startAnother}
+            >
+              Build another puzzle
             </button>
           </section>
         </div>
