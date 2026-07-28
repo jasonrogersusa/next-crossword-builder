@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Neural Mini — AI Crossword",
+  title: "Neural Mini — Google Cloud Next ’26 Crossword",
   description:
-    "A tiny, playful crossword for humans who think about artificial intelligence.",
+    "A playable mini crossword inspired by AI product reveals from Google Cloud Next ’26.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

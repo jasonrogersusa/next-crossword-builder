@@ -13,12 +13,19 @@ type Clue = {
 };
 
 const solution = [
-  ["C", "R", "E", "M", "E"],
-  ["H", "I", "#", "A", "N"],
-  ["A", "G", "E", "N", "T"],
-  ["O", "H", "#", "O", "R"],
-  ["S", "T", "O", "R", "Y"],
-];
+  "###AWARE#",
+  "#CATALOG#",
+  "ORDERING#",
+  "MAD######",
+  "GPS###SHE",
+  "######WAY",
+  "#ADDITIVE",
+  "#RUNTIME#",
+  "#TEASE###",
+].map((row) => [...row]);
+
+const gridSize = solution.length;
+const firstCell: Cell = { row: 0, col: 3 };
 
 const initialGrid = solution.map((row) =>
   row.map((cell) => (cell === "#" ? "#" : "")),
@@ -43,40 +50,80 @@ const span = (
 });
 
 const clues: Clue[] = [
-  span("across", 1, "CREME", "___ de la crème: the very best", 0, 0),
-  span("across", 5, "HI", "A chatbot’s friendly opener", 1, 0),
-  span("across", 6, "AN", "Article before “algorithm”", 1, 3),
-  span("across", 7, "AGENT", "AI that plans and acts toward a goal", 2, 0),
-  span("across", 8, "OH", "Reaction to a surprisingly human reply", 3, 0),
-  span("across", 9, "OR", "Logic operator paired with AND", 3, 3),
-  span("across", 10, "STORY", "What a creative model might spin", 4, 0),
-  span("down", 1, "CHAOS", "State a vague prompt can leave things in", 0, 0),
-  span("down", 2, "RIGHT", "Direction the cursor moves after a letter", 0, 1),
-  span("down", 3, "MANOR", "Grand house — or a convincing AI backdrop", 0, 3),
-  span("down", 4, "ENTRY", "One item in a dataset or form", 0, 4),
+  span("across", 1, "AWARE", "In the know", 0, 3),
+  span(
+    "across",
+    6,
+    "CATALOG",
+    "Knowledge ___, the new grounding layer for enterprise agents",
+    1,
+    1,
+  ),
+  span("across", 8, "ORDERING", "Putting items into sequence", 2, 0),
+  span("across", 9, "MAD", "More than annoyed", 3, 0),
+  span("across", 10, "GPS", "Route-planning tech, for short", 4, 0),
+  span("across", 11, "SHE", "Pronoun for a woman", 4, 6),
+  span("across", 14, "WAY", "Route or manner", 5, 6),
+  span("across", 15, "ADDITIVE", "Something mixed in to enhance a material", 6, 1),
+  span(
+    "across",
+    20,
+    "RUNTIME",
+    "Agent ___, re-engineered for long-running AI agents",
+    7,
+    1,
+  ),
+  span("across", 21, "TEASE", "Playfully provoke", 8, 1),
+  span("down", 1, "ATE", "Finished dinner", 0, 3),
+  span("down", 2, "WAR", "Armed conflict", 0, 4),
+  span("down", 3, "ALI", "Boxer Muhammad", 0, 5),
+  span("down", 4, "RON", "Weasley of Hogwarts", 0, 6),
+  span("down", 5, "EGG", "Breakfast shellful", 0, 7),
+  span("down", 6, "CRAP", "Nonsense, bluntly", 1, 1),
+  span("down", 7, "ADDS", "Puts in", 1, 2),
+  span("down", 8, "OMG", "Shocked-text initials", 2, 0),
+  span("down", 11, "SWIM", "Move through water", 4, 6),
+  span("down", 12, "HAVE", "Possess", 4, 7),
+  span("down", 13, "EYE", "Camera-like organ", 4, 8),
+  span("down", 15, "ART", "Gallery display", 6, 1),
+  span("down", 16, "DUE", "Expected to arrive", 6, 2),
+  span("down", 17, "DNA", "Genetic code", 6, 3),
+  span("down", 18, "ITS", "Possessive pronoun", 6, 4),
+  span("down", 19, "TIE", "Finish even", 6, 5),
 ];
 
 const cellNumbers: Record<string, number> = {
-  "0-0": 1,
-  "0-1": 2,
-  "0-3": 3,
-  "0-4": 4,
-  "1-0": 5,
-  "1-3": 6,
-  "2-0": 7,
-  "3-0": 8,
-  "3-3": 9,
+  "0-3": 1,
+  "0-4": 2,
+  "0-5": 3,
+  "0-6": 4,
+  "0-7": 5,
+  "1-1": 6,
+  "1-2": 7,
+  "2-0": 8,
+  "3-0": 9,
   "4-0": 10,
+  "4-6": 11,
+  "4-7": 12,
+  "4-8": 13,
+  "5-6": 14,
+  "6-1": 15,
+  "6-2": 16,
+  "6-3": 17,
+  "6-4": 18,
+  "6-5": 19,
+  "7-1": 20,
+  "8-1": 21,
 };
 
 const keyboardRows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-const storageKey = "neural-mini-progress";
+const storageKey = "neural-mini-next26-progress";
 
 const keyFor = ({ row, col }: Cell) => `${row}-${col}`;
 
 export default function Home() {
   const [grid, setGrid] = useState(initialGrid);
-  const [selected, setSelected] = useState<Cell>({ row: 0, col: 0 });
+  const [selected, setSelected] = useState<Cell>(firstCell);
   const [direction, setDirection] = useState<Direction>("across");
   const [wrongCells, setWrongCells] = useState<Set<string>>(new Set());
   const [revealedCells, setRevealedCells] = useState<Set<string>>(new Set());
@@ -90,7 +137,10 @@ export default function Home() {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved) as string[][];
-        if (parsed.length === 5 && parsed.every((row) => row.length === 5)) {
+        if (
+          parsed.length === gridSize &&
+          parsed.every((row) => row.length === gridSize)
+        ) {
           setGrid(parsed);
         }
       }
@@ -222,7 +272,12 @@ export default function Home() {
     (rowDelta: number, colDelta: number) => {
       let row = selected.row + rowDelta;
       let col = selected.col + colDelta;
-      while (row >= 0 && row < 5 && col >= 0 && col < 5) {
+      while (
+        row >= 0 &&
+        row < gridSize &&
+        col >= 0 &&
+        col < gridSize
+      ) {
         if (solution[row][col] !== "#") {
           setSelected({ row, col });
           setDirection(rowDelta === 0 ? "across" : "down");
@@ -339,7 +394,7 @@ export default function Home() {
     setGrid(initialGrid);
     setWrongCells(new Set());
     setRevealedCells(new Set());
-    setSelected({ row: 0, col: 0 });
+    setSelected(firstCell);
     setDirection("across");
     setElapsed(0);
     setRunning(true);
@@ -369,7 +424,7 @@ export default function Home() {
             </span>
           </div>
           <div className="puzzle-meta">
-            <span>AI EDITION · 001</span>
+            <span>NEXT ’26 EDITION · 002</span>
             <time aria-label={`Elapsed time ${formattedTime}`}>{formattedTime}</time>
           </div>
         </header>
@@ -377,7 +432,7 @@ export default function Home() {
         <div className="toolbar" aria-label="Puzzle tools">
           <p>
             <span>Tuesday</span>
-            Tiny grid. Big intelligence.
+            Product reveals, crossed.
           </p>
           <div>
             <button type="button" onClick={checkPuzzle} aria-label="Check puzzle">
@@ -397,9 +452,9 @@ export default function Home() {
 
         <div className="game-area">
           <div
-            className="crossword-grid"
+            className="crossword-grid grid-9"
             role="grid"
-            aria-label="5 by 5 crossword grid"
+            aria-label="9 by 9 crossword grid"
           >
             {solution.map((row, rowIndex) =>
               row.map((answer, colIndex) => {
@@ -544,7 +599,7 @@ export default function Home() {
         <footer>
           <span>NEURAL MINI</span>
           <p>Made for curious humans.</p>
-          <span>5 × 5</span>
+          <span>9 × 9</span>
         </footer>
       </section>
 
@@ -561,7 +616,7 @@ export default function Home() {
             <div className="success-orbit" aria-hidden="true">
               <span>✦</span>
             </div>
-            <p className="eyebrow">MODEL BEHAVIOR: IMPRESSIVE</p>
+            <p className="eyebrow">NEXT ’26 KNOWLEDGE: IMPRESSIVE</p>
             <h1 id="completion-title">You cracked it.</h1>
             <p>
               Human intuition: <strong>still undefeated.</strong>
