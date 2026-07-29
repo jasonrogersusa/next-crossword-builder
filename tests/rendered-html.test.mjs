@@ -46,10 +46,15 @@ test("keeps the finished puzzle responsive and interactive", async () => {
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /"REGISTRY"/);
-  assert.match(page, /"IRONWOOD"/);
-  assert.match(page, /"GEMINI"/);
+  assert.match(page, /"GATEWAY"/);
+  assert.match(page, /"SILICON"/);
+  assert.match(page, /"LYRIA"/);
   assert.match(page, /"LAKEHOUSE"/);
+  assert.match(page, /"PROTOCOLS"/);
+  assert.match(page, /"INFERENCE"/);
+  assert.match(page, /"PROMPTING"/);
+  assert.match(page, /"CATALOGUE"/);
+  assert.match(page, /entry\("API", 3, 0, "down"/);
   assert.match(page, /const compilePuzzle/);
   assert.match(page, /onClick=\{checkPuzzle\}/);
   assert.match(page, /onClick=\{revealLetter\}/);
@@ -57,4 +62,14 @@ test("keeps the finished puzzle responsive and interactive", async () => {
   assert.match(layout, /Personalized AI Crossword/);
   assert.match(css, /grid-template-columns:\s*repeat\(9,\s*1fr\)/);
   assert.match(css, /@media \(max-width:\s*650px\)/);
+
+  const entriesPerPuzzle = page.match(/entries:\s*\[/g) ?? [];
+  assert.equal(entriesPerPuzzle.length, 4);
+  const playableCells = [
+    /entry\("ADK", 0, 3, "across"/,
+    /entry\("TPU", 0, 3, "across"/,
+    /entry\("VEO", 0, 3, "across"/,
+    /entry\("WIZ", 0, 3, "across"/,
+  ];
+  playableCells.forEach((pattern) => assert.match(page, pattern));
 });
