@@ -211,7 +211,7 @@ const compilePuzzle = (
   };
 };
 
-const emptyGridFor = (solution: string[][]) =>
+const emptyGridFor = (solution: string[][]): string[][] =>
   solution.map((row) => row.map((cell) => (cell === "#" ? "#" : "")));
 
 export default function Home() {

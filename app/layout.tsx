@@ -1,24 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
+const repositoryName =
+  process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "next-crossword-builder";
+const basePath = isGitHubPages ? `/${repositoryName}` : "";
+const faviconPath = `${basePath}/favicon.svg`;
 
 export const metadata: Metadata = {
   title: "Neural Mini — Personalized AI Crossword",
   description:
     "Choose your AI interests and generate a personalized, playable mini crossword.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: faviconPath,
+    shortcut: faviconPath,
   },
 };
 
@@ -29,9 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

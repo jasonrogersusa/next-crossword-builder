@@ -1,98 +1,50 @@
-# vinext-starter
+# Neural Mini AI Crossword
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+A playable AI-themed mini crossword built with Next.js. The app starts by asking
+which area of tech the player is interested in, then serves a denser 9x9
+crossword for that topic.
 
-## Prerequisites
-
-- Node.js `>=22.13.0`
-
-## Quick Start
+## Local Development
 
 ```bash
 npm install
 npm run dev
+```
+
+## Validate the Current App Build
+
+```bash
+npm test
+```
+
+The default build still uses the existing Vinext/Sites runtime:
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## GitHub Pages
 
-## Included Shape
+This repository includes a GitHub Actions workflow at
+`.github/workflows/github-pages.yml`.
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+On every push to `main`, the workflow:
 
-## Workspace Auth Headers
+1. Installs dependencies with `npm ci`
+2. Runs `npm run build:github`
+3. Uploads the static `out/` export
+4. Deploys it to GitHub Pages
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+To test the same static export locally:
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm run build:github
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+For a project Pages URL such as
+`https://jasonrogersusa.github.io/next-crossword-builder/`, the workflow sets
+the correct base path automatically from `GITHUB_REPOSITORY`.
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+In GitHub, make sure Pages is set to deploy from **GitHub Actions**:
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+`Settings` -> `Pages` -> `Build and deployment` -> `Source: GitHub Actions`
