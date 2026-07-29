@@ -468,8 +468,8 @@ button {
   width: 100%;
   aspect-ratio: 1;
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
   border: 2px solid var(--line);
   background: var(--line);
   gap: 2px;
@@ -545,18 +545,18 @@ button {
   line-height: 1;
 }
 
-.grid-9 .cell-number {
+.grid-5 .cell-number {
   left: 3px;
   top: 2px;
-  font-size: clamp(7px, 1vw, 10px);
+  font-size: clamp(9px, 1.3vw, 13px);
 }
 
-.grid-9 .letter {
-  margin-top: 10%;
-  font-size: clamp(18px, 3.1vw, 30px);
+.grid-5 .letter {
+  margin-top: 8%;
+  font-size: clamp(30px, 5vw, 54px);
 }
 
-.grid-9 .cell.selected {
+.grid-5 .cell.selected {
   box-shadow: inset 0 0 0 2px var(--ink);
 }
 
@@ -1007,14 +1007,14 @@ footer p {
     font-size: clamp(31px, 11vw, 52px);
   }
 
-  .grid-9 .cell-number {
+  .grid-5 .cell-number {
     left: 2px;
     top: 2px;
-    font-size: clamp(6px, 2vw, 9px);
+    font-size: clamp(8px, 2.4vw, 12px);
   }
 
-  .grid-9 .letter {
-    font-size: clamp(17px, 5.6vw, 27px);
+  .grid-5 .letter {
+    font-size: clamp(28px, 10vw, 48px);
   }
 
   .clue-tray {

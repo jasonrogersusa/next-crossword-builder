@@ -46,30 +46,70 @@ test("keeps the finished puzzle responsive and interactive", async () => {
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /"GATEWAY"/);
-  assert.match(page, /"SILICON"/);
-  assert.match(page, /"LYRIA"/);
-  assert.match(page, /"LAKEHOUSE"/);
-  assert.match(page, /"PROTOCOLS"/);
-  assert.match(page, /"INFERENCE"/);
-  assert.match(page, /"PROMPTING"/);
-  assert.match(page, /"CATALOGUE"/);
-  assert.match(page, /entry\("API", 3, 0, "down"/);
+  assert.match(page, /const GRID_SIZE = 5/);
+  assert.match(page, /"AGENT"/);
+  assert.match(page, /"NODES"/);
+  assert.match(page, /"MODEL"/);
+  assert.match(page, /"TRUST"/);
   assert.match(page, /const compilePuzzle/);
   assert.match(page, /onClick=\{checkPuzzle\}/);
   assert.match(page, /onClick=\{revealLetter\}/);
   assert.match(page, /onClick=\{backspace\}/);
   assert.match(layout, /Personalized AI Crossword/);
-  assert.match(css, /grid-template-columns:\s*repeat\(9,\s*1fr\)/);
+  assert.match(css, /grid-template-columns:\s*repeat\(5,\s*1fr\)/);
   assert.match(css, /@media \(max-width:\s*650px\)/);
 
   const entriesPerPuzzle = page.match(/entries:\s*\[/g) ?? [];
   assert.equal(entriesPerPuzzle.length, 4);
-  const playableCells = [
-    /entry\("ADK", 0, 3, "across"/,
-    /entry\("TPU", 0, 3, "across"/,
-    /entry\("VEO", 0, 3, "across"/,
-    /entry\("WIZ", 0, 3, "across"/,
-  ];
-  playableCells.forEach((pattern) => assert.match(page, pattern));
+});
+
+test("every open across and down run has a matching clue", async () => {
+  const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const names = ["agents", "infra", "genai", "data"];
+
+  for (const name of names) {
+    const start = page.indexOf(`  ${name}: {`);
+    const end = page.indexOf("\n  },", start);
+    assert.notEqual(start, -1, `Missing ${name} puzzle`);
+    assert.notEqual(end, -1, `Could not parse ${name} puzzle`);
+
+    const chunk = page.slice(start, end);
+    const entries = [...chunk.matchAll(/entry\("([A-Z]+)", (\d), (\d), "(across|down)"/g)]
+      .map((match) => ({
+        answer: match[1],
+        row: Number(match[2]),
+        col: Number(match[3]),
+        direction: match[4],
+      }));
+    const grid = Array.from({ length: 5 }, () => Array(5).fill("#"));
+
+    for (const entry of entries) {
+      [...entry.answer].forEach((letter, index) => {
+        const row = entry.row + (entry.direction === "down" ? index : 0);
+        const col = entry.col + (entry.direction === "across" ? index : 0);
+        assert.ok(row < 5 && col < 5, `${name}: ${entry.answer} leaves the grid`);
+        assert.ok(
+          grid[row][col] === "#" || grid[row][col] === letter,
+          `${name}: ${entry.answer} conflicts at ${row},${col}`,
+        );
+        grid[row][col] = letter;
+      });
+    }
+
+    const entryKeys = new Set(
+      entries.map((entry) => `${entry.direction}:${entry.row}:${entry.col}:${entry.answer}`),
+    );
+    const runs = [];
+
+    for (let row = 0; row < 5; row += 1) {
+      runs.push(`across:${row}:0:${grid[row].join("")}`);
+    }
+    for (let col = 0; col < 5; col += 1) {
+      runs.push(`down:0:${col}:${grid.map((row) => row[col]).join("")}`);
+    }
+
+    for (const run of runs) {
+      assert.ok(entryKeys.has(run), `${name}: missing clue for ${run}`);
+    }
+  }
 });

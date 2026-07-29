@@ -35,7 +35,7 @@ type CompiledPuzzle = {
   firstCell: Cell;
 };
 
-const GRID_SIZE = 9;
+const GRID_SIZE = 5;
 
 const entry = (
   answer: string,
@@ -57,69 +57,69 @@ const puzzles: Record<Interest, Puzzle> = {
   agents: {
     label: "Agents & orchestration",
     shortLabel: "agents",
-    description: "Memory, tools, runtimes, and the systems that connect them.",
+    description: "A compact word-square grid with real crossings for every agent clue.",
     entries: [
-      entry("ADK", 0, 3, "across", "Agent Development Kit, briefly", "Google's agent-building kit, briefly"),
-      entry("INBOX", 1, 2, "across", "Gemini Enterprise hub for managing agent activity", "Where an agent's work lands"),
-      entry("GATEWAY", 2, 1, "across", "Policy layer for agent-to-agent and agent-to-tool traffic", "Guarded entrance for agent connections"),
-      entry("AUTOMATED", 3, 0, "across", "Handled by software without constant human steering", "Able to run on its own"),
-      entry("PROTOCOLS", 4, 0, "across", "Rules that let agents and tools talk reliably", "Shared rules for systems talking"),
-      entry("INTERFACE", 5, 0, "across", "Surface where a person, model, or tool connects", "A connection surface"),
-      entry("PROMPTS", 6, 1, "across", "Instructions that steer model behavior", "Things you ask an AI"),
-      entry("AGENT", 7, 2, "across", "AI system that plans and acts toward a goal", "AI that can plan and take action"),
-      entry("MCP", 8, 3, "across", "Protocol that connects models to tools, briefly", "Model Context Protocol, briefly"),
-      entry("API", 3, 0, "down", "Programmatic doorway used by tools and agents", "How apps talk to other apps, briefly"),
+      entry("SPACE", 0, 0, "across", "Room an agent needs to explore a task", "Room to work"),
+      entry("PAGAN", 1, 0, "across", "Old-world believer, in crossword fill", "Ancient polytheist"),
+      entry("AGENT", 2, 0, "across", "AI system that plans and acts toward a goal", "AI that can plan and take action"),
+      entry("CANOE", 3, 0, "across", "Light craft that can be steered", "Small paddle boat"),
+      entry("ENTER", 4, 0, "across", "Submit a prompt or command", "Send a command"),
+      entry("SPACE", 0, 0, "down", "Working area for an autonomous system", "A place to work"),
+      entry("PAGAN", 0, 1, "down", "Ancient polytheist", "Old-world believer"),
+      entry("AGENT", 0, 2, "down", "Goal-seeking AI worker", "AI worker"),
+      entry("CANOE", 0, 3, "down", "Vessel guided by a human pilot", "Small paddle boat"),
+      entry("ENTER", 0, 4, "down", "Key used to send a request", "Keyboard key for sending"),
     ],
   },
   infra: {
     label: "TPUs & infrastructure",
     shortLabel: "infrastructure",
-    description: "AI chips, networking, training, and inference at cloud scale.",
+    description: "A node-and-network word square with valid down clues.",
     entries: [
-      entry("TPU", 0, 3, "across", "Google AI accelerator, briefly", "Tensor Processing Unit, briefly"),
-      entry("AXION", 1, 2, "across", "Google Cloud custom CPU family", "Google's custom cloud CPU"),
-      entry("SILICON", 2, 1, "across", "Material at the heart of AI accelerators", "What chips are made from"),
-      entry("TRAINABLE", 3, 0, "across", "Capable of learning from examples", "Able to learn from examples"),
-      entry("INFERENCE", 4, 0, "across", "What optimized serving hardware accelerates", "What a model does after training"),
-      entry("NETWORKED", 5, 0, "across", "Linked for distributed compute", "Connected together"),
-      entry("ROUTERS", 6, 1, "across", "Devices that move traffic between networks", "Traffic directors for networks"),
-      entry("CLOUD", 7, 2, "across", "Home of managed AI infrastructure", "Where remote compute lives"),
-      entry("GPU", 8, 3, "across", "Accelerator often compared with a TPU", "Another AI accelerator, briefly"),
-      entry("TIN", 3, 0, "down", "Metal used in solder on circuit boards", "Circuit-board solder metal"),
+      entry("PANSY", 0, 0, "across", "Flower name in a compact fill", "Small garden flower"),
+      entry("ALOHA", 1, 0, "across", "Greeting sent across a network", "Hawaiian hello"),
+      entry("GATOR", 2, 0, "across", "Mascot-like machine name, maybe", "Swamp reptile"),
+      entry("AMEND", 3, 0, "across", "Patch or revise infrastructure code", "Revise"),
+      entry("NODES", 4, 0, "across", "Compute points in a distributed system", "Network points"),
+      entry("PAGAN", 0, 0, "down", "Old-world believer, in crossword fill", "Ancient polytheist"),
+      entry("ALAMO", 0, 1, "down", "Historic site with a memorable name", "Texas landmark"),
+      entry("NOTED", 0, 2, "down", "Logged for later inspection", "Written down"),
+      entry("SHONE", 0, 3, "down", "Glowed, as status lights did", "Gave off light"),
+      entry("YARDS", 0, 4, "down", "Measures of cable or fiber length", "Three-foot measures"),
     ],
   },
   genai: {
     label: "Generative AI",
     shortLabel: "generative AI",
-    description: "Models that create text, imagery, video, music, and more.",
+    description: "Models, layers, and edits in a fully crossed mini.",
     entries: [
-      entry("VEO", 0, 3, "across", "Google's generative video model", "Three-letter video model"),
-      entry("LYRIA", 1, 2, "across", "Google model family for music generation", "Google's music-generation model"),
-      entry("PROMPTS", 2, 1, "across", "Inputs that steer generated output", "Things you ask an AI"),
-      entry("GENERATES", 3, 0, "across", "Creates text, images, video, or sound", "Makes new media"),
-      entry("PROMPTING", 4, 0, "across", "Crafting instructions for a model", "Writing better asks for AI"),
-      entry("SYNTHETIC", 5, 0, "across", "Artificially created, as AI media may be", "Made rather than captured"),
-      entry("MODELER", 6, 1, "across", "Person who shapes systems that generate", "Person building models"),
-      entry("AUDIO", 7, 2, "across", "Sound-based model output", "What reaches your ears"),
-      entry("ART", 8, 3, "across", "Creative output an image model may produce", "Creative visual output"),
-      entry("GPS", 3, 0, "down", "Location tech that can ground a generated map", "Location system, briefly"),
+      entry("MODEL", 0, 0, "across", "System that generates responses", "AI system"),
+      entry("OPERA", 1, 0, "across", "Large-scale audio creation", "Dramatic musical work"),
+      entry("DELAY", 2, 0, "across", "Latency before a generated response", "A wait"),
+      entry("ERASE", 3, 0, "across", "Remove a bad generation", "Remove"),
+      entry("LAYER", 4, 0, "across", "Neural-network stack part", "Part of a neural network"),
+      entry("MODEL", 0, 0, "down", "Generative AI engine", "AI engine"),
+      entry("OPERA", 0, 1, "down", "Music form a model might describe", "Dramatic musical work"),
+      entry("DELAY", 0, 2, "down", "Response lag", "A wait"),
+      entry("ERASE", 0, 3, "down", "Delete unwanted output", "Delete"),
+      entry("LAYER", 0, 4, "down", "Level in a neural net", "Neural-net level"),
     ],
   },
   data: {
     label: "Data & security",
     shortLabel: "data and security",
-    description: "Trusted context, governance, defenses, and enterprise data.",
+    description: "A trust-focused square with every column clued.",
     entries: [
-      entry("WIZ", 0, 3, "across", "Cloud security company now paired with Google Cloud", "Google Cloud security partner"),
-      entry("TRUST", 1, 2, "across", "Foundation of secure enterprise AI", "Confidence in a system"),
-      entry("CATALOG", 2, 1, "across", "Knowledge ___ grounds agents in trusted business context", "Knowledge ___ organizes trusted context"),
-      entry("ANALYTICS", 3, 0, "across", "Discipline that turns data into decisions", "Finding meaning in data"),
-      entry("CATALOGUE", 4, 0, "across", "Organized index of governed assets", "An organized asset index"),
-      entry("LAKEHOUSE", 5, 0, "across", "Cross-cloud, AI-native home for analytical data", "Data architecture mixing lake and warehouse"),
-      entry("THREATS", 6, 1, "across", "Risks that security teams detect and remediate", "Potential security dangers"),
-      entry("QUERY", 7, 2, "across", "Question sent to a database", "A database question"),
-      entry("SQL", 8, 3, "across", "Language for relational data", "Database language, briefly"),
-      entry("ACL", 3, 0, "down", "Access-control list, briefly", "Permissions list, briefly"),
+      entry("TRUST", 0, 0, "across", "Foundation of secure enterprise AI", "Confidence in a system"),
+      entry("RANCH", 1, 0, "across", "Large managed spread, like data at scale", "Large managed spread"),
+      entry("UNDER", 2, 0, "across", "Subject to governance or policy", "Subject to"),
+      entry("SCENE", 3, 0, "across", "Context around an incident", "Context"),
+      entry("THREE", 4, 0, "across", "Count of letters in SQL", "Number of SQL letters"),
+      entry("TRUST", 0, 0, "down", "Secure AI requirement", "Security confidence"),
+      entry("RANCH", 0, 1, "down", "Managed spread", "Large spread"),
+      entry("UNDER", 0, 2, "down", "Governed by a policy", "Subject to"),
+      entry("SCENE", 0, 3, "down", "Incident context", "Context"),
+      entry("THREE", 0, 4, "down", "How many letters in WIZ", "Number of WIZ letters"),
     ],
   },
 };
@@ -709,9 +709,9 @@ export default function Home() {
 
         <div className="game-area">
           <div
-            className="crossword-grid grid-9"
+            className="crossword-grid grid-5"
             role="grid"
-            aria-label="9 by 9 personalized crossword grid"
+            aria-label="5 by 5 personalized crossword grid"
           >
             {solution.map((row, rowIndex) =>
               row.map((answer, colIndex) => {
@@ -865,7 +865,7 @@ export default function Home() {
         <footer>
           <span>MADE FOR YOU</span>
           <p>{puzzle.label}</p>
-          <span>9 × 9</span>
+          <span>5 × 5</span>
         </footer>
       </section>
 
