@@ -48,9 +48,11 @@ test("keeps the finished puzzle responsive and interactive", async () => {
 
   assert.match(page, /const GRID_SIZE = 5/);
   assert.match(page, /"AGENT"/);
-  assert.match(page, /"NODES"/);
-  assert.match(page, /"MODEL"/);
-  assert.match(page, /"TRUST"/);
+  assert.match(page, /"CORES"/);
+  assert.match(page, /"GEMMA"/);
+  assert.match(page, /"MEDIA"/);
+  assert.match(page, /"GRAPH"/);
+  assert.match(page, /Start over/);
   assert.match(page, /const compilePuzzle/);
   assert.match(page, /onClick=\{checkPuzzle\}/);
   assert.match(page, /onClick=\{revealLetter\}/);
@@ -102,10 +104,41 @@ test("every open across and down run has a matching clue", async () => {
     const runs = [];
 
     for (let row = 0; row < 5; row += 1) {
-      runs.push(`across:${row}:0:${grid[row].join("")}`);
+      let col = 0;
+      while (col < 5) {
+        if (grid[row][col] === "#") {
+          col += 1;
+          continue;
+        }
+        const startCol = col;
+        let answer = "";
+        while (col < 5 && grid[row][col] !== "#") {
+          answer += grid[row][col];
+          col += 1;
+        }
+        if (answer.length > 1) {
+          runs.push(`across:${row}:${startCol}:${answer}`);
+        }
+      }
     }
+
     for (let col = 0; col < 5; col += 1) {
-      runs.push(`down:0:${col}:${grid.map((row) => row[col]).join("")}`);
+      let row = 0;
+      while (row < 5) {
+        if (grid[row][col] === "#") {
+          row += 1;
+          continue;
+        }
+        const startRow = row;
+        let answer = "";
+        while (row < 5 && grid[row][col] !== "#") {
+          answer += grid[row][col];
+          row += 1;
+        }
+        if (answer.length > 1) {
+          runs.push(`down:${startRow}:${col}:${answer}`);
+        }
+      }
     }
 
     for (const run of runs) {

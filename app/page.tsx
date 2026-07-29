@@ -57,69 +57,45 @@ const puzzles: Record<Interest, Puzzle> = {
   agents: {
     label: "Agents & orchestration",
     shortLabel: "agents",
-    description: "A compact word-square grid with real crossings for every agent clue.",
+    description: "Agent terms with a goal-seeking spine clue crossing the grid.",
     entries: [
-      entry("SPACE", 0, 0, "across", "Room an agent needs to explore a task", "Room to work"),
-      entry("PAGAN", 1, 0, "across", "Old-world believer, in crossword fill", "Ancient polytheist"),
+      entry("SMART", 0, 0, "across", "Able to adapt or reason, as an agent should", "Clever enough to act"),
       entry("AGENT", 2, 0, "across", "AI system that plans and acts toward a goal", "AI that can plan and take action"),
-      entry("CANOE", 3, 0, "across", "Light craft that can be steered", "Small paddle boat"),
       entry("ENTER", 4, 0, "across", "Submit a prompt or command", "Send a command"),
-      entry("SPACE", 0, 0, "down", "Working area for an autonomous system", "A place to work"),
-      entry("PAGAN", 0, 1, "down", "Ancient polytheist", "Old-world believer"),
       entry("AGENT", 0, 2, "down", "Goal-seeking AI worker", "AI worker"),
-      entry("CANOE", 0, 3, "down", "Vessel guided by a human pilot", "Small paddle boat"),
-      entry("ENTER", 0, 4, "down", "Key used to send a request", "Keyboard key for sending"),
     ],
   },
   infra: {
     label: "TPUs & infrastructure",
     shortLabel: "infrastructure",
-    description: "A node-and-network word square with valid down clues.",
+    description: "Cloud infrastructure terms for compute, routing, and servers.",
     entries: [
-      entry("PANSY", 0, 0, "across", "Flower name in a compact fill", "Small garden flower"),
-      entry("ALOHA", 1, 0, "across", "Greeting sent across a network", "Hawaiian hello"),
-      entry("GATOR", 2, 0, "across", "Mascot-like machine name, maybe", "Swamp reptile"),
-      entry("AMEND", 3, 0, "across", "Patch or revise infrastructure code", "Revise"),
-      entry("NODES", 4, 0, "across", "Compute points in a distributed system", "Network points"),
-      entry("PAGAN", 0, 0, "down", "Old-world believer, in crossword fill", "Ancient polytheist"),
-      entry("ALAMO", 0, 1, "down", "Historic site with a memorable name", "Texas landmark"),
-      entry("NOTED", 0, 2, "down", "Logged for later inspection", "Written down"),
-      entry("SHONE", 0, 3, "down", "Glowed, as status lights did", "Gave off light"),
-      entry("YARDS", 0, 4, "down", "Measures of cable or fiber length", "Three-foot measures"),
+      entry("CACHE", 0, 0, "across", "Fast storage layer close to compute", "Fast storage layer"),
+      entry("PORTS", 2, 0, "across", "Network endpoints services listen on", "Network endpoints"),
+      entry("HOSTS", 4, 0, "across", "Machines that run cloud workloads", "Workload machines"),
+      entry("CORES", 0, 2, "down", "CPU units grouped into bigger compute shapes", "CPU units"),
     ],
   },
   genai: {
     label: "Generative AI",
     shortLabel: "generative AI",
-    description: "Models, layers, and edits in a fully crossed mini.",
+    description: "Generative models, media outputs, and the content they create.",
     entries: [
-      entry("MODEL", 0, 0, "across", "System that generates responses", "AI system"),
-      entry("OPERA", 1, 0, "across", "Large-scale audio creation", "Dramatic musical work"),
-      entry("DELAY", 2, 0, "across", "Latency before a generated response", "A wait"),
-      entry("ERASE", 3, 0, "across", "Remove a bad generation", "Remove"),
-      entry("LAYER", 4, 0, "across", "Neural-network stack part", "Part of a neural network"),
-      entry("MODEL", 0, 0, "down", "Generative AI engine", "AI engine"),
-      entry("OPERA", 0, 1, "down", "Music form a model might describe", "Dramatic musical work"),
-      entry("DELAY", 0, 2, "down", "Response lag", "A wait"),
-      entry("ERASE", 0, 3, "down", "Delete unwanted output", "Delete"),
-      entry("LAYER", 0, 4, "down", "Level in a neural net", "Neural-net level"),
+      entry("GEMMA", 0, 0, "across", "Google family of lightweight open models", "Google open model family"),
+      entry("AUDIO", 2, 0, "across", "Sound-based model output", "What reaches your ears"),
+      entry("IMAGE", 4, 0, "across", "Visual output a model can generate", "AI-made visual"),
+      entry("MEDIA", 0, 2, "down", "Text, audio, images, and video as a group", "Created content category"),
     ],
   },
   data: {
     label: "Data & security",
     shortLabel: "data and security",
-    description: "A trust-focused square with every column clued.",
+    description: "Data structures, indexes, and security review work.",
     entries: [
-      entry("TRUST", 0, 0, "across", "Foundation of secure enterprise AI", "Confidence in a system"),
-      entry("RANCH", 1, 0, "across", "Large managed spread, like data at scale", "Large managed spread"),
-      entry("UNDER", 2, 0, "across", "Subject to governance or policy", "Subject to"),
-      entry("SCENE", 3, 0, "across", "Context around an incident", "Context"),
-      entry("THREE", 4, 0, "across", "Count of letters in SQL", "Number of SQL letters"),
-      entry("TRUST", 0, 0, "down", "Secure AI requirement", "Security confidence"),
-      entry("RANCH", 0, 1, "down", "Managed spread", "Large spread"),
-      entry("UNDER", 0, 2, "down", "Governed by a policy", "Subject to"),
-      entry("SCENE", 0, 3, "down", "Incident context", "Context"),
-      entry("THREE", 0, 4, "down", "How many letters in WIZ", "Number of WIZ letters"),
+      entry("GRAPH", 0, 0, "across", "Connected data structure for relationships", "Relationship data structure"),
+      entry("INDEX", 2, 0, "across", "Structure that speeds database lookup", "Lookup helper"),
+      entry("PATCH", 4, 0, "across", "Security fix applied after a finding", "Security fix"),
+      entry("AUDIT", 0, 2, "down", "Formal review of access, controls, or logs", "Security review"),
     ],
   },
 };
@@ -688,9 +664,9 @@ export default function Home() {
             {puzzle.description}
           </p>
           <div>
-            <button type="button" onClick={startAnother} aria-label="Build another puzzle">
+            <button type="button" onClick={startAnother} aria-label="Start over and choose a new crossword">
               <b>＋</b>
-              New
+              Start over
             </button>
             <button type="button" onClick={checkPuzzle} aria-label="Check puzzle">
               <b>✓</b>
@@ -909,7 +885,7 @@ export default function Home() {
               className="text-button"
               onClick={startAnother}
             >
-              Build another puzzle
+              Start over
             </button>
           </section>
         </div>
